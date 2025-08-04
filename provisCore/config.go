@@ -1,11 +1,13 @@
 package provisCore
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -30,7 +32,7 @@ func NewConfig(applicationKey, secretKey string) *provisConfig {
 		AplicationKey: applicationKey,
 		SecretKey:     secretKey}
 }
-func (pc *provisConfig) GenerateRequest(installationId string, uri string, queryParams string, method string, params any) *http.Request {
+func (pc *provisConfig) GenerateRequest(installationId string, uri string, queryParams url.Values, method string, params any) *http.Request {
 	var nonce uuid.UUID = uuid.New()
 	var timeStamp string = strconv.FormatInt(time.Now().Unix(), 10)
 	var request = &http.Request{
@@ -39,9 +41,23 @@ func (pc *provisConfig) GenerateRequest(installationId string, uri string, query
 			Scheme:   "https",
 			Host:     "apibase-integraciones.provis.es",
 			Path:     uri,
-			RawQuery: queryParams,
+			RawQuery: queryParams.Encode(),
 		},
 		Header: make(http.Header),
+	}
+	var body io.Reader
+	if params != nil {
+		jsonBody, err := json.Marshal(params)
+		if err == nil {
+			body = bytes.NewReader(jsonBody)
+		}
+		request.Body = io.NopCloser(body)
+	}
+
+	if body != nil {
+		if bodyBytes, ok := body.(*bytes.Reader); ok {
+			request.ContentLength = int64(bodyBytes.Len())
+		}
 	}
 	var fullURL string = request.URL.String()
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")

@@ -18,9 +18,8 @@ func (pe provisExecutor) Cuotas(ctx context.Context) (*provisEntities.CursillosR
 		params.Set("fechaInicio", "2024-11-12T14:46:30")
 		params.Set("fechaFin", "2024-12-16T14:46:30")
 
-		var queryParams = params.Encode()
 		var request *http.Request = pe.config.GenerateRequest(pe.installationId,
-			"/api/enrollments/reservation/", queryParams, http.MethodGet,
+			"/api/enrollments/reservation/", params, http.MethodGet,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray []any = make([]any, 0)
