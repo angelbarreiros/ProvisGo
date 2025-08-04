@@ -32,7 +32,7 @@ func NewConfig(applicationKey, secretKey string) *provisConfig {
 		AplicationKey: applicationKey,
 		SecretKey:     secretKey}
 }
-func (pc *provisConfig) GenerateRequest(installationId string, uri string, queryParams url.Values, method string, params any) *http.Request {
+func (pc *provisConfig) generateRequest(installationId string, uri string, queryParams url.Values, method string, params any) *http.Request {
 	var nonce uuid.UUID = uuid.New()
 	var timeStamp string = strconv.FormatInt(time.Now().Unix(), 10)
 	var request = &http.Request{
