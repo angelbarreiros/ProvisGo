@@ -32,7 +32,7 @@ func NewConfig(applicationKey, secretKey string) *provisConfig {
 		AplicationKey: applicationKey,
 		SecretKey:     secretKey}
 }
-func (pc *provisConfig) generateRequest(installationId string, uri string, queryParams url.Values, method string, params any) *http.Request {
+func (pc *provisConfig) generateRequest(installationId string, method string, uri string, queryParams url.Values, params any) *http.Request {
 	var nonce uuid.UUID = uuid.New()
 	var timeStamp string = strconv.FormatInt(time.Now().Unix(), 10)
 	var request = &http.Request{
@@ -58,9 +58,12 @@ func (pc *provisConfig) generateRequest(installationId string, uri string, query
 		if bodyBytes, ok := body.(*bytes.Reader); ok {
 			request.ContentLength = int64(bodyBytes.Len())
 		}
+		request.Header.Set("Content-Type", "application/json")
+	} else {
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
 	var fullURL string = request.URL.String()
-	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	request.Header.Set("Timestamp", time.Now().Format(time.RFC3339))
 	request.Header.Set("Authorization", "hmac-256 "+installationId+":"+pc.AplicationKey+":"+pc.generateSign(fullURL, method, params, nonce, timeStamp)+":"+nonce.String()+":"+timeStamp)
 	request.Header.Set("Cache-Control", "no-cache")

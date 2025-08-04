@@ -16,7 +16,7 @@ func (pe provisExecutor) Cursillos(ctx context.Context) (*provisEntities.Cursill
 		var params = url.Values{}
 		params.Set("installationId", pe.installationId)
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			"/api/courses/simple/", params, http.MethodGet,
+			http.MethodGet, "/api/courses/simple/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray []provisEntities.Cursillo = make([]provisEntities.Cursillo, 0)
