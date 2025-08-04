@@ -2,7 +2,6 @@ package provisCore
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"net/url"
 	"provisgo/provisEntities"
@@ -24,7 +23,6 @@ func (pe provisExecutor) Cuotas(ctx context.Context) (*provisEntities.CursillosR
 			"/api/enrollments/reservation/", queryParams, http.MethodGet,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		log.Println(request.URL.String())
 		var responseArray []any = make([]any, 0)
 		var responseBody = &responseArray
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
@@ -33,8 +31,7 @@ func (pe provisExecutor) Cuotas(ctx context.Context) (*provisEntities.CursillosR
 
 	select {
 	case res := <-resultChan:
-		if res.Response != nil {
-
+		if res.Error == nil {
 			return &provisEntities.CursillosResponse{}, res.Error
 		}
 		return nil, res.Error

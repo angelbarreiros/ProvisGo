@@ -2,7 +2,6 @@ package provisCore
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"provisgo/provisEntities"
 	"strings"
@@ -63,7 +62,6 @@ func (pp provisProvider) Cursillos(ctx context.Context, installationId string) (
 	executor := pp.getExecutor(installationId)
 	defer pp.putExecutor(executor)
 	var response, err = executor.Cursillos(ctx)
-	log.Println(response)
 	return response, err
 }
 func (pp provisProvider) Cuotas(ctx context.Context, installationId string) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
@@ -73,6 +71,5 @@ func (pp provisProvider) Cuotas(ctx context.Context, installationId string) (*pr
 	executor := pp.getExecutor(installationId)
 	defer pp.putExecutor(executor)
 	var response, err = executor.Cuotas(ctx)
-	log.Println(response)
 	return response, err
 }

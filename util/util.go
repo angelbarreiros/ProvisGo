@@ -13,6 +13,16 @@ type RequestResult struct {
 	Response interface{}
 	Error    *provisEntities.ErrorResponse
 }
+type ProvisErrorResponse struct {
+	Code          int    `json:"code"`
+	Message       string `json:"message"`
+	CustomMessage struct {
+		Id         any            `json:"Id"`
+		Parameters map[string]any `json:"Parameters"`
+	} `json:"CustomMessage"`
+	Details string `json:"Details"`
+	Result  string `json:"Result"`
+}
 
 // ExecuteRequest handles common HTTP request execution pattern including error handling and response processing
 // It takes a context, http client, request, and a target interface to unmarshal the response into
