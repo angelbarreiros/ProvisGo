@@ -8,23 +8,24 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Cursillos() (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
 
-		params.Set("installationid", pe.installationId)
+		params.Set("coursegroupid", courseGroupId)
+		params.Set("installationId", pe.installationId)
+		params.Set("datetoconsult", dateToConsult)
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			http.MethodGet, "/api/courses/simple/", params,
+			http.MethodGet, "/api/courses/reservation/personlist", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 
 		request.Header.Add("Accept-Language", "en")
-		var responseArray []provisEntities.Cursillo = make([]provisEntities.Cursillo, 0)
-		var responseBody = &responseArray
+		var responseBody = &provisEntities.GroupsResponse{}
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
 		resultChan <- result
 	}()
@@ -32,14 +33,14 @@ func (pe provisExecutor) Cursillos() (*provisEntities.CursillosResponse, *provis
 	select {
 	case res := <-resultChan:
 		if res.Response != nil {
-			var responseCursillos = res.Response.(*[]provisEntities.Cursillo)
-			return &provisEntities.CursillosResponse{Cursillos: *responseCursillos}, res.Error
+			var responseGroups = res.Response.(*provisEntities.GroupsResponse)
+			return responseGroups, res.Error
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
 		return nil, &provisEntities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
-			Message: "Request timeout: operation cancelled after 10 seconds",
+			Message: "Request timeout: operation cancelled after 30 seconds",
 		}
 	}
 }

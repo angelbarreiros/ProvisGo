@@ -8,32 +8,38 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Cursillos() (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Workers() (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
-
 		params.Set("installationid", pe.installationId)
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			http.MethodGet, "/api/courses/simple/", params,
+			http.MethodGet, "/api/staff/list/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-
-		request.Header.Add("Accept-Language", "en")
-		var responseArray []provisEntities.Cursillo = make([]provisEntities.Cursillo, 0)
-		var responseBody = &responseArray
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		var responseArray = make([]*provisEntities.ProvisWorker, 0)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
 		resultChan <- result
 	}()
 
 	select {
 	case res := <-resultChan:
-		if res.Response != nil {
-			var responseCursillos = res.Response.(*[]provisEntities.Cursillo)
-			return &provisEntities.CursillosResponse{Cursillos: *responseCursillos}, res.Error
+		if res.Error == nil {
+			if workers, ok := res.Response.(*[]*provisEntities.ProvisWorker); ok {
+				if workers == nil {
+					workers = &[]*provisEntities.ProvisWorker{}
+				}
+				return &provisEntities.ProvisWorkers{
+					Workers: *workers,
+				}, res.Error
+			}
+			return nil, &provisEntities.ErrorResponse{
+				Code:    http.StatusInternalServerError,
+				Message: "Invalid response format",
+			}
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():

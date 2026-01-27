@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"provisgo/provisEntities"
 )
 
@@ -61,7 +63,30 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 		}
 	}
 
-	// Only try to unmarshal if we have a target and response body
+	file, fileErr := os.Create("output.txt")
+	if fileErr != nil {
+		log.Printf("Failed to create file: %v", fileErr)
+		return RequestResult{
+			Response: nil,
+			Error: &provisEntities.ErrorResponse{
+				Code:    http.StatusInternalServerError,
+				Message: "Failed to create file: " + fileErr.Error(),
+			},
+		}
+	}
+	defer file.Close()
+	// log.Println(string(bodyBytes))
+	_, writeErr := file.Write(bodyBytes)
+	if writeErr != nil {
+		log.Printf("Failed to write to file: %v", writeErr)
+		return RequestResult{
+			Response: nil,
+			Error: &provisEntities.ErrorResponse{
+				Code:    http.StatusInternalServerError,
+				Message: "Failed to write to file: " + writeErr.Error(),
+			},
+		}
+	}
 	if target != nil && len(bodyBytes) > 0 {
 		err = json.Unmarshal(bodyBytes, target)
 		if err != nil {

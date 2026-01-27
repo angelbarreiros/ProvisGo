@@ -21,16 +21,19 @@ import (
 type provisConfig struct {
 	AplicationKey string
 	SecretKey     string
+	Host          string
 }
 
-func NewConfig(applicationKey, secretKey string) *provisConfig {
+func NewConfig(host, applicationKey, secretKey string) *provisConfig {
 	if strings.TrimSpace(applicationKey) == "" ||
 		strings.TrimSpace(secretKey) == "" {
 		log.Fatal("Invalid configuration: InstallationID, AplicationKey, and SecretKey must be provided")
 	}
 	return &provisConfig{
 		AplicationKey: applicationKey,
-		SecretKey:     secretKey}
+		SecretKey:     secretKey,
+		Host:          host,
+	}
 }
 func (pc *provisConfig) generateRequest(installationId string, method string, uri string, queryParams url.Values, params any) *http.Request {
 	var nonce uuid.UUID = uuid.New()
@@ -39,7 +42,7 @@ func (pc *provisConfig) generateRequest(installationId string, method string, ur
 		Method: method,
 		URL: &url.URL{
 			Scheme:   "https",
-			Host:     "apibase-integraciones.provis.es",
+			Host:     pc.Host, //"apibase-integraciones.provis.es",
 			Path:     uri,
 			RawQuery: queryParams.Encode(),
 		},
@@ -67,6 +70,7 @@ func (pc *provisConfig) generateRequest(installationId string, method string, ur
 	request.Header.Set("Timestamp", time.Now().Format(time.RFC3339))
 	request.Header.Set("Authorization", "hmac-256 "+installationId+":"+pc.AplicationKey+":"+pc.generateSign(fullURL, method, params, nonce, timeStamp)+":"+nonce.String()+":"+timeStamp)
 	request.Header.Set("Cache-Control", "no-cache")
+	log.Println("Generated Request URL: ", fullURL)
 	return request
 
 }

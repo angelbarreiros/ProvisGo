@@ -2,3 +2,5 @@ main.go
 build
 dist
 provisgo
+*.json
+.txt
