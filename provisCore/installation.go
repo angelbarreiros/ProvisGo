@@ -8,16 +8,25 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Installations() (any, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Installations(filterParams *provisEntities.InstallationsParams) (any, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
-		// params.Set("installationid", pe.installationId)
+		if filterParams != nil {
+			params = filterParams.ToURLValues()
+		}
+		// Build URL path with optional extended parameter
+		urlPath := "/api/installations/byappkey"
+		if filterParams != nil && filterParams.Extended != nil && *filterParams.Extended {
+			urlPath += "?extended=true"
+		} else {
+			urlPath += "?extended=true" // Default behavior
+		}
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			http.MethodGet, "/api/installations/byappkey?extended=true", params,
+			http.MethodGet, urlPath, params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray any

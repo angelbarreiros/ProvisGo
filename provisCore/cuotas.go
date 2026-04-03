@@ -8,16 +8,26 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Cuotas() (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Cuotas(filterParams *provisEntities.CuotasParams) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
+		if filterParams != nil {
+			params = filterParams.ToURLValues()
+		}
 		params.Set("idInstallation", pe.installationId)
-		params.Set("fechaInicio", "2023-12-12T14:46:30")
-		params.Set("fechaFin", "2027-12-12T14:46:30")
-		params.Set("personid", "0")
+		// Default values if not provided via filterParams
+		if params.Get("fechaInicio") == "" {
+			params.Set("fechaInicio", "2023-12-12T14:46:30")
+		}
+		if params.Get("fechaFin") == "" {
+			params.Set("fechaFin", "2027-12-12T14:46:30")
+		}
+		if params.Get("personid") == "" {
+			params.Set("personid", "0")
+		}
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
 			http.MethodGet, "/api/enrollments/reservation/", params,

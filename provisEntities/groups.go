@@ -1,5 +1,25 @@
 package provisEntities
 
+import "net/url"
+
+// GroupsParams represents filter parameters for the Groups endpoint
+// All fields are pointers to allow optional/nullable values
+type GroupsParams struct {
+	AcceptLanguage *string `json:"acceptLanguage,omitempty"`
+}
+
+// ToURLValues serializes the filter params to url.Values
+// Only non-nil fields are added to the result
+func (p *GroupsParams) ToURLValues() url.Values {
+	values := url.Values{}
+	if p == nil {
+		return values
+	}
+	// Groups endpoint doesn't have query params besides the required ones
+	// AcceptLanguage is sent as header, not query param
+	return values
+}
+
 type GroupsResponse struct {
 	Code          int           `json:"code"`
 	Message       string        `json:"message"`

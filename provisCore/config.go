@@ -65,6 +65,7 @@ func (pc *provisConfig) generateRequest(installationId string, method string, ur
 	} else {
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
+	request.Header.Set("Accept", "application/json")
 	var fullURL string = request.URL.String()
 
 	request.Header.Set("Timestamp", time.Now().Format(time.RFC3339))

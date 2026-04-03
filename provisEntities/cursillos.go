@@ -1,5 +1,104 @@
 package provisEntities
 
+import (
+	"net/url"
+	"strconv"
+)
+
+// CursillosParams represents filter parameters for the Cursillos endpoint
+// All fields are pointers to allow optional/nullable values
+type CursillosParams struct {
+	Origen                           *string  `json:"origen,omitempty"`
+	IDPersona                        *int     `json:"idpersona,omitempty"`
+	FechaInicio                      *string  `json:"fechainicio,omitempty"`
+	Edad                             *int     `json:"edad,omitempty"`
+	DiaSemana                        *int     `json:"diasemana,omitempty"`
+	FranjaHoraria                    *string  `json:"franjahoraria,omitempty"`
+	PrecioMaximo                     *float64 `json:"preciomaximo,omitempty"`
+	Agrupacion                       *string  `json:"agrupacion,omitempty"`
+	TipoDeCliente                    *string  `json:"tipodecliente,omitempty"`
+	Cursillo                         *string  `json:"cursillo,omitempty"`
+	Centro                           *string  `json:"centro,omitempty"`
+	Plazas                           *int     `json:"plazas,omitempty"`
+	IncluirVisiblesSoloDesdePrograma *bool    `json:"incluirVisiblesSoloDesdePrograma,omitempty"`
+}
+
+// ToURLValues serializes the filter params to url.Values
+// Only non-nil fields are added to the result
+func (p *CursillosParams) ToURLValues() url.Values {
+	values := url.Values{}
+	if p == nil {
+		return values
+	}
+	if p.Origen != nil {
+		values.Set("origen", *p.Origen)
+	}
+	if p.IDPersona != nil {
+		values.Set("idpersona", strconv.Itoa(*p.IDPersona))
+	}
+	if p.FechaInicio != nil {
+		values.Set("fechainicio", *p.FechaInicio)
+	}
+	if p.Edad != nil {
+		values.Set("edad", strconv.Itoa(*p.Edad))
+	}
+	if p.DiaSemana != nil {
+		values.Set("diasemana", strconv.Itoa(*p.DiaSemana))
+	}
+	if p.FranjaHoraria != nil {
+		values.Set("franjahoraria", *p.FranjaHoraria)
+	}
+	if p.PrecioMaximo != nil {
+		values.Set("preciomaximo", strconv.FormatFloat(*p.PrecioMaximo, 'f', -1, 64))
+	}
+	if p.Agrupacion != nil {
+		values.Set("agrupacion", *p.Agrupacion)
+	}
+	if p.TipoDeCliente != nil {
+		values.Set("tipodecliente", *p.TipoDeCliente)
+	}
+	if p.Cursillo != nil {
+		values.Set("cursillo", *p.Cursillo)
+	}
+	if p.Centro != nil {
+		values.Set("centro", *p.Centro)
+	}
+	if p.Plazas != nil {
+		values.Set("plazas", strconv.Itoa(*p.Plazas))
+	}
+	if p.IncluirVisiblesSoloDesdePrograma != nil {
+		values.Set("incluirVisiblesSoloDesdePrograma", strconv.FormatBool(*p.IncluirVisiblesSoloDesdePrograma))
+	}
+	return values
+}
+
+// CuotasParams represents filter parameters for the Cuotas endpoint
+// All fields are pointers to allow optional/nullable values
+type CuotasParams struct {
+	FechaInicio *string `json:"fechaInicio,omitempty"`
+	FechaFin    *string `json:"fechaFin,omitempty"`
+	PersonID    *string `json:"personid,omitempty"`
+}
+
+// ToURLValues serializes the filter params to url.Values
+// Only non-nil fields are added to the result
+func (p *CuotasParams) ToURLValues() url.Values {
+	values := url.Values{}
+	if p == nil {
+		return values
+	}
+	if p.FechaInicio != nil {
+		values.Set("fechaInicio", *p.FechaInicio)
+	}
+	if p.FechaFin != nil {
+		values.Set("fechaFin", *p.FechaFin)
+	}
+	if p.PersonID != nil {
+		values.Set("personid", *p.PersonID)
+	}
+	return values
+}
+
 type Horario struct {
 	DiaDeLaSemana int    `json:"diadelasemana"`
 	HoraInicio    string `json:"horainicio"`

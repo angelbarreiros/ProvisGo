@@ -8,14 +8,16 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Personaldata(personId string) (*provisEntities.FamilyPerson, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntities.PersonalDataParams) (*provisEntities.FamilyPerson, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
+		if filterParams != nil {
+			params = filterParams.ToURLValues()
+		}
 		params.Set("installationid", pe.installationId)
-
 		params.Set("idPersona", personId)
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
 			http.MethodGet, "/api/person/personaldata", params,

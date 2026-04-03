@@ -8,12 +8,15 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Workers() (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
+		if filterParams != nil {
+			params = filterParams.ToURLValues()
+		}
 		params.Set("installationid", pe.installationId)
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,

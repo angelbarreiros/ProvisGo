@@ -75,7 +75,7 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 		}
 	}
 	defer file.Close()
-	// log.Println(string(bodyBytes))
+	log.Println(string(bodyBytes))
 	_, writeErr := file.Write(bodyBytes)
 	if writeErr != nil {
 		log.Printf("Failed to write to file: %v", writeErr)

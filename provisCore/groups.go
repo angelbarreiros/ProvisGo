@@ -8,13 +8,15 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filterParams *provisEntities.GroupsParams) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
 		var params = url.Values{}
-
+		if filterParams != nil {
+			params = filterParams.ToURLValues()
+		}
 		params.Set("coursegroupid", courseGroupId)
 		params.Set("installationId", pe.installationId)
 		params.Set("datetoconsult", dateToConsult)
@@ -24,7 +26,12 @@ func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string) (*pr
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 
-		request.Header.Add("Accept-Language", "en")
+		// Use AcceptLanguage from filterParams if provided, otherwise default to "en"
+		acceptLanguage := "en"
+		if filterParams != nil && filterParams.AcceptLanguage != nil {
+			acceptLanguage = *filterParams.AcceptLanguage
+		}
+		request.Header.Add("Accept-Language", acceptLanguage)
 		var responseBody = &provisEntities.GroupsResponse{}
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
 		resultChan <- result

@@ -1,5 +1,27 @@
 package provisEntities
 
+import "net/url"
+
+// PersonalDataParams represents filter parameters for the PersonalData endpoint
+// All fields are pointers to allow optional/nullable values
+type PersonalDataParams struct {
+	IncludeAddresses   *bool `json:"includeAddresses,omitempty"`
+	IncludePaymentInfo *bool `json:"includePaymentInfo,omitempty"`
+	IncludeContactInfo *bool `json:"includeContactInfo,omitempty"`
+}
+
+// ToURLValues serializes the filter params to url.Values
+// Only non-nil fields are added to the result
+func (p *PersonalDataParams) ToURLValues() url.Values {
+	values := url.Values{}
+	if p == nil {
+		return values
+	}
+	// PersonalData endpoint currently doesn't have optional query params
+	// besides installationid and idPersona which are handled separately
+	return values
+}
+
 type Persona struct {
 	IDPersona                                   int                `json:"idPersona"`
 	IDInstalacion                               int                `json:"idInstalacion"`

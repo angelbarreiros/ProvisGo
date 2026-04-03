@@ -1,5 +1,41 @@
 package provisEntities
 
+import (
+	"net/url"
+	"strconv"
+)
+
+// FamiliesParams represents filter parameters for the Families endpoint
+// All fields are pointers to allow optional/nullable values
+type FamiliesParams struct {
+	IncludeFamilyMembers *bool `json:"includeFamilyMembers,omitempty"`
+	IncludeContactInfo   *bool `json:"includeContactInfo,omitempty"`
+	ActiveOnly           *bool `json:"activeOnly,omitempty"`
+	IncludeInactive      *bool `json:"includeInactive,omitempty"`
+}
+
+// ToURLValues serializes the filter params to url.Values
+// Only non-nil fields are added to the result
+func (p *FamiliesParams) ToURLValues() url.Values {
+	values := url.Values{}
+	if p == nil {
+		return values
+	}
+	if p.IncludeFamilyMembers != nil {
+		values.Set("includeFamilyMembers", strconv.FormatBool(*p.IncludeFamilyMembers))
+	}
+	if p.IncludeContactInfo != nil {
+		values.Set("includeContactInfo", strconv.FormatBool(*p.IncludeContactInfo))
+	}
+	if p.ActiveOnly != nil {
+		values.Set("activeOnly", strconv.FormatBool(*p.ActiveOnly))
+	}
+	if p.IncludeInactive != nil {
+		values.Set("includeInactive", strconv.FormatBool(*p.IncludeInactive))
+	}
+	return values
+}
+
 type FamilyPerson struct {
 	IDPersona                                   int           `json:"idPersona"`
 	IDInstalacion                               int           `json:"idInstalacion"`
