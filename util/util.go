@@ -1,39 +1,73 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"provisgo/provisEntities"
+	"strings"
 )
 
-// RequestResult encapsulates the possible outcomes of an API request
-type RequestResult struct {
-	Response interface{}
-	Error    *provisEntities.ErrorResponse
+// ErrorResponse represents an error response from the API
+type ErrorResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
-type ProvisErrorResponse struct {
-	Code          int    `json:"code"`
-	Message       string `json:"message"`
-	CustomMessage struct {
-		Id         any            `json:"Id"`
-		Parameters map[string]any `json:"Parameters"`
-	} `json:"CustomMessage"`
-	Details string `json:"Details"`
-	Result  string `json:"Result"`
+
+// RequestResult encapsulates the possible outcomes of an API request
+type RequestResult[T any] struct {
+	Response T
+	Error    *ErrorResponse
 }
 
 // ExecuteRequest handles common HTTP request execution pattern including error handling and response processing
-// It takes a context, http client, request, and a target interface to unmarshal the response into
-func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Request, target any) RequestResult {
+// It takes a context, http client, request, and returns a typed RequestResult
+func ExecuteRequest[T any](ctx context.Context, client *http.Client, request *http.Request) RequestResult[T] {
+	var zero T
+	log.Println(request.URL)
+
+	// Read and store the body (if present), then restore it
+	var bodyContent string
+	if request.Body != nil {
+		bodyBytes, err := io.ReadAll(request.Body)
+		if err == nil {
+			bodyContent = string(bodyBytes)
+			// Restore the body so it can be read again by client.Do
+			request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		}
+	}
+
+	// Build curl command
+	var curlBuilder strings.Builder
+	curlBuilder.WriteString(fmt.Sprintf("curl -X %s '%s'", request.Method, request.URL.String()))
+
+	// Add headers
+	for key, values := range request.Header {
+		for _, value := range values {
+			curlBuilder.WriteString(fmt.Sprintf(" -H '%s: %s'", key, value))
+		}
+	}
+
+	// Add body if present
+	if bodyContent != "" {
+		curlBuilder.WriteString(fmt.Sprintf(" -d '%s'", bodyContent))
+	}
+
+	curlCommand := curlBuilder.String()
+
+	// Print to stdout
+	fmt.Println(curlCommand)
+
 	response, clientErr := client.Do(request)
 	if clientErr != nil {
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+		return RequestResult[T]{
+			Response: zero,
+			Error: &ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Failed to execute request: " + clientErr.Error(),
 			},
@@ -41,71 +75,67 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 	}
 	defer response.Body.Close()
 
-	bodyBytes, err := io.ReadAll(response.Body)
+	responseBodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+		return RequestResult[T]{
+			Response: zero,
+			Error: &ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Failed to read response body: " + err.Error(),
 			},
 		}
 	}
 
+	responseBody := string(responseBodyBytes)
+
+	// Append to file with curl command and response body
+	file, err := os.OpenFile("calls.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err == nil {
+		defer file.Close()
+		file.WriteString(curlCommand + "\n")
+		file.WriteString("Response:" + response.Status + " " + responseBody + "\n")
+		file.WriteString("\n")
+	}
+
 	// If we received a non-success status code, return an error
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+		return RequestResult[T]{
+			Response: zero,
+			Error: &ErrorResponse{
 				Code:    response.StatusCode,
-				Message: "Response: " + string(bodyBytes),
+				Message: "Response: " + responseBody,
 			},
 		}
 	}
 
-	file, fileErr := os.Create("output.txt")
-	if fileErr != nil {
-		log.Printf("Failed to create file: %v", fileErr)
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Failed to create file: " + fileErr.Error(),
-			},
-		}
-	}
-	defer file.Close()
-	log.Println(string(bodyBytes))
-	_, writeErr := file.Write(bodyBytes)
-	if writeErr != nil {
-		log.Printf("Failed to write to file: %v", writeErr)
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Failed to write to file: " + writeErr.Error(),
-			},
-		}
-	}
-	if target != nil && len(bodyBytes) > 0 {
-		err = json.Unmarshal(bodyBytes, target)
+	// Only try to unmarshal if we have response body
+	if len(responseBodyBytes) > 0 {
+		var target T
+		err = json.Unmarshal(responseBodyBytes, &target)
 		if err != nil {
-			return RequestResult{
-				Response: nil,
-				Error: &provisEntities.ErrorResponse{
+			return RequestResult[T]{
+				Response: zero,
+				Error: &ErrorResponse{
 					Code:    http.StatusInternalServerError,
 					Message: "Failed to unmarshal response: " + err.Error(),
 				},
 			}
 		}
-		return RequestResult{
+		return RequestResult[T]{
 			Response: target,
 			Error:    nil,
 		}
 	}
 
-	return RequestResult{
-		Response: nil,
+	return RequestResult[T]{
+		Response: zero,
 		Error:    nil,
 	}
+}
+
+func AddQueryParam(name string, value *string, values *url.Values) {
+	if value != nil && *value != "" {
+		values.Add(name, *value)
+	}
+
 }

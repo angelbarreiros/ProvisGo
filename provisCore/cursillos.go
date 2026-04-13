@@ -8,10 +8,10 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Cursillos(filterParams *provisEntities.CursillosParams) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Cursillos(filterParams *provisEntities.CursillosParams) (*provisEntities.CursillosResponse, *util.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
-	resultChan := make(chan util.RequestResult, 1)
+	resultChan := make(chan util.RequestResult[[]provisEntities.Cursillo], 1)
 	go func() {
 		var params = url.Values{}
 		if filterParams != nil {
@@ -24,21 +24,17 @@ func (pe provisExecutor) Cursillos(filterParams *provisEntities.CursillosParams)
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 
-		var responseArray []provisEntities.Cursillo = make([]provisEntities.Cursillo, 0)
-		var responseBody = &responseArray
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		result := util.ExecuteRequest[[]provisEntities.Cursillo](ctxWithTimeout, pe.client, request)
 		resultChan <- result
 	}()
 
 	select {
 	case res := <-resultChan:
-		if res.Response != nil {
-			var responseCursillos = res.Response.(*[]provisEntities.Cursillo)
-			return &provisEntities.CursillosResponse{Cursillos: *responseCursillos}, res.Error
-		}
-		return nil, res.Error
+		return &provisEntities.CursillosResponse{
+			Cursillos: res.Response,
+		}, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &util.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

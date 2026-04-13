@@ -8,10 +8,10 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.FamiliesParams) (*provisEntities.Familie, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.FamiliesParams) (*provisEntities.Familie, *util.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
-	resultChan := make(chan util.RequestResult, 1)
+	resultChan := make(chan util.RequestResult[provisEntities.Familie], 1)
 	go func() {
 		var params = url.Values{}
 		if filterParams != nil {
@@ -24,30 +24,17 @@ func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.
 			http.MethodGet, "/api/person/family/byperson/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray = make([]*provisEntities.FamilyPerson, 0)
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
+
+		result := util.ExecuteRequest[provisEntities.Familie](ctxWithTimeout, pe.client, request)
 		resultChan <- result
 	}()
 
 	select {
 	case res := <-resultChan:
-		if res.Error == nil {
-			if persons, ok := res.Response.(*[]*provisEntities.FamilyPerson); ok {
-				if persons == nil {
-					persons = &[]*provisEntities.FamilyPerson{}
-				}
-				return &provisEntities.Familie{
-					FamilyPersons: *persons,
-				}, res.Error
-			}
-			return nil, &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Invalid response format",
-			}
-		}
-		return nil, res.Error
+
+		return &res.Response, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &util.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

@@ -8,10 +8,10 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filterParams *provisEntities.GroupsParams) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filterParams *provisEntities.GroupsParams) (*provisEntities.GroupsResponse, *util.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
-	resultChan := make(chan util.RequestResult, 1)
+	resultChan := make(chan util.RequestResult[provisEntities.GroupsResponse], 1)
 	go func() {
 		var params = url.Values{}
 		if filterParams != nil {
@@ -32,20 +32,16 @@ func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filt
 			acceptLanguage = *filterParams.AcceptLanguage
 		}
 		request.Header.Add("Accept-Language", acceptLanguage)
-		var responseBody = &provisEntities.GroupsResponse{}
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		result := util.ExecuteRequest[provisEntities.GroupsResponse](ctxWithTimeout, pe.client, request)
 		resultChan <- result
 	}()
 
 	select {
 	case res := <-resultChan:
-		if res.Response != nil {
-			var responseGroups = res.Response.(*provisEntities.GroupsResponse)
-			return responseGroups, res.Error
-		}
-		return nil, res.Error
+
+		return &res.Response, nil
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &util.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 30 seconds",
 		}

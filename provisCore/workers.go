@@ -8,10 +8,10 @@ import (
 	"provisgo/util"
 )
 
-func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*provisEntities.ProvisWorkers, *util.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
-	resultChan := make(chan util.RequestResult, 1)
+	resultChan := make(chan util.RequestResult[provisEntities.ProvisWorkers], 1)
 	go func() {
 		var params = url.Values{}
 		if filterParams != nil {
@@ -23,30 +23,17 @@ func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*p
 			http.MethodGet, "/api/staff/list/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray = make([]*provisEntities.ProvisWorker, 0)
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
+
+		result := util.ExecuteRequest[provisEntities.ProvisWorkers](ctxWithTimeout, pe.client, request)
 		resultChan <- result
 	}()
 
 	select {
 	case res := <-resultChan:
-		if res.Error == nil {
-			if workers, ok := res.Response.(*[]*provisEntities.ProvisWorker); ok {
-				if workers == nil {
-					workers = &[]*provisEntities.ProvisWorker{}
-				}
-				return &provisEntities.ProvisWorkers{
-					Workers: *workers,
-				}, res.Error
-			}
-			return nil, &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Invalid response format",
-			}
-		}
-		return nil, res.Error
+
+		return &res.Response, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &util.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}
