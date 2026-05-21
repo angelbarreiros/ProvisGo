@@ -1,6 +1,9 @@
 main.go
+util_main.go
 build
 dist
 provisgo
 *.json
 .txt
+*.txt
+*.csv

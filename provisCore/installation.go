@@ -30,7 +30,7 @@ func (pe provisExecutor) Installations(filterParams *provisEntities.Installation
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray any
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
 

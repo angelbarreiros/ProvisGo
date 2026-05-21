@@ -22,9 +22,12 @@ type provisConfig struct {
 	AplicationKey string
 	SecretKey     string
 	Host          string
+	Debug         bool
 }
 
-func NewConfig(host, applicationKey, secretKey string) *provisConfig {
+const browserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+func NewConfig(host, applicationKey, secretKey string, debug bool) *provisConfig {
 	if strings.TrimSpace(applicationKey) == "" ||
 		strings.TrimSpace(secretKey) == "" {
 		log.Fatal("Invalid configuration: InstallationID, AplicationKey, and SecretKey must be provided")
@@ -33,6 +36,7 @@ func NewConfig(host, applicationKey, secretKey string) *provisConfig {
 		AplicationKey: applicationKey,
 		SecretKey:     secretKey,
 		Host:          host,
+		Debug:         debug,
 	}
 }
 func (pc *provisConfig) generateRequest(installationId string, method string, uri string, queryParams url.Values, params any) *http.Request {
@@ -71,7 +75,7 @@ func (pc *provisConfig) generateRequest(installationId string, method string, ur
 	request.Header.Set("Timestamp", time.Now().Format(time.RFC3339))
 	request.Header.Set("Authorization", "hmac-256 "+installationId+":"+pc.AplicationKey+":"+pc.generateSign(fullURL, method, params, nonce, timeStamp)+":"+nonce.String()+":"+timeStamp)
 	request.Header.Set("Cache-Control", "no-cache")
-	log.Println("Generated Request URL: ", fullURL)
+	request.Header.Set("User-Agent", browserUserAgent)
 	return request
 
 }

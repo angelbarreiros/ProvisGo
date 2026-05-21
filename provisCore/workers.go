@@ -24,7 +24,7 @@ func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*p
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray = make([]*provisEntities.ProvisWorker, 0)
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
 

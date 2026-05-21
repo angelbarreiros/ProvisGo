@@ -35,7 +35,7 @@ func (pe provisExecutor) Cuotas(filterParams *provisEntities.CuotasParams) (*pro
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray []any = make([]any, 0)
 		var responseBody = &responseArray
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, responseBody)
 		resultChan <- result
 	}()
 

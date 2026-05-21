@@ -25,7 +25,7 @@ func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var responseArray = make([]*provisEntities.FamilyPerson, 0)
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, &responseArray)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
 

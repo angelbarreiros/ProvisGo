@@ -15,8 +15,7 @@ func (p *GroupsParams) ToURLValues() url.Values {
 	if p == nil {
 		return values
 	}
-	// Groups endpoint doesn't have query params besides the required ones
-	// AcceptLanguage is sent as header, not query param
+
 	return values
 }
 

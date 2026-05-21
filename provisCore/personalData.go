@@ -24,7 +24,7 @@ func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntit
 			nil)
 		request = request.WithContext(ctxWithTimeout)
 		var response *provisEntities.FamilyPerson = new(provisEntities.FamilyPerson)
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, response)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, response)
 		resultChan <- result
 	}()
 

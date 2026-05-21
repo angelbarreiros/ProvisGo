@@ -13,10 +13,11 @@ func (pe provisExecutor) Cursillos(filterParams *provisEntities.CursillosParams)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
 	go func() {
-		var params = url.Values{}
+		var params url.Values = url.Values{}
 		if filterParams != nil {
 			params = filterParams.ToURLValues()
 		}
+
 		params.Set("installationId", pe.installationId)
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
@@ -26,7 +27,7 @@ func (pe provisExecutor) Cursillos(filterParams *provisEntities.CursillosParams)
 
 		var responseArray []provisEntities.Cursillo = make([]provisEntities.Cursillo, 0)
 		var responseBody = &responseArray
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, responseBody)
 		resultChan <- result
 	}()
 

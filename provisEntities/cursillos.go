@@ -9,18 +9,20 @@ import (
 // All fields are pointers to allow optional/nullable values
 type CursillosParams struct {
 	Origen                           *string  `json:"origen,omitempty"`
-	IDPersona                        *int     `json:"idpersona,omitempty"`
+	IDPersona                        *int     `json:"personId,omitempty"`
 	FechaInicio                      *string  `json:"fechainicio,omitempty"`
 	Edad                             *int     `json:"edad,omitempty"`
 	DiaSemana                        *int     `json:"diasemana,omitempty"`
 	FranjaHoraria                    *string  `json:"franjahoraria,omitempty"`
 	PrecioMaximo                     *float64 `json:"preciomaximo,omitempty"`
 	Agrupacion                       *string  `json:"agrupacion,omitempty"`
-	TipoDeCliente                    *string  `json:"tipodecliente,omitempty"`
+	TipoDeCliente                    *string  `json:"clienttypeid,omitempty"`
 	Cursillo                         *string  `json:"cursillo,omitempty"`
 	Centro                           *string  `json:"centro,omitempty"`
 	Plazas                           *int     `json:"plazas,omitempty"`
 	IncluirVisiblesSoloDesdePrograma *bool    `json:"incluirVisiblesSoloDesdePrograma,omitempty"`
+	ShowAllCourses                   *bool    `json:"showallcourses,omitempty"`
+	ExtraParams                      map[string]string
 }
 
 // ToURLValues serializes the filter params to url.Values
@@ -34,7 +36,7 @@ func (p *CursillosParams) ToURLValues() url.Values {
 		values.Set("origen", *p.Origen)
 	}
 	if p.IDPersona != nil {
-		values.Set("idpersona", strconv.Itoa(*p.IDPersona))
+		values.Set("personId", strconv.Itoa(*p.IDPersona))
 	}
 	if p.FechaInicio != nil {
 		values.Set("fechainicio", *p.FechaInicio)
@@ -55,7 +57,7 @@ func (p *CursillosParams) ToURLValues() url.Values {
 		values.Set("agrupacion", *p.Agrupacion)
 	}
 	if p.TipoDeCliente != nil {
-		values.Set("tipodecliente", *p.TipoDeCliente)
+		values.Set("clienttypeid", *p.TipoDeCliente)
 	}
 	if p.Cursillo != nil {
 		values.Set("cursillo", *p.Cursillo)
@@ -68,6 +70,12 @@ func (p *CursillosParams) ToURLValues() url.Values {
 	}
 	if p.IncluirVisiblesSoloDesdePrograma != nil {
 		values.Set("incluirVisiblesSoloDesdePrograma", strconv.FormatBool(*p.IncluirVisiblesSoloDesdePrograma))
+	}
+	if p.ShowAllCourses != nil {
+		values.Set("showallcourses", strconv.FormatBool(*p.ShowAllCourses))
+	}
+	for key, value := range p.ExtraParams {
+		values.Set(key, value)
 	}
 	return values
 }
@@ -235,5 +243,5 @@ type Cursillo struct {
 	GruposCursillosPendientes                    []any                `json:"gruposCursillosPendientes"`
 }
 type CursillosResponse struct {
-	Cursillos []Cursillo
+	Cursillos []Cursillo `json:"cursillos"`
 }

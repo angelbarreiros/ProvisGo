@@ -33,7 +33,7 @@ func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filt
 		}
 		request.Header.Add("Accept-Language", acceptLanguage)
 		var responseBody = &provisEntities.GroupsResponse{}
-		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, responseBody)
+		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, responseBody)
 		resultChan <- result
 	}()
 
