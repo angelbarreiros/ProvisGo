@@ -79,10 +79,6 @@ Body: {"example":"response"}
 
 This can expose credentials, authorization headers, personal data, and API response contents. Use debug mode only in trusted local environments.
 
-## API Documentation
-
-This repository includes `documentacion-api.md` as reference material for the PROVIS API. Before publishing the repository publicly, confirm that the document can be redistributed.
-
 ## Release Checklist
 
 Before tagging `v0.1.0`:
