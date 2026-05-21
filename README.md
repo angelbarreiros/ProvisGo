@@ -16,23 +16,23 @@ package main
 import (
 	"fmt"
 
-	"github.com/angelbarreiros/ProvisGo/provisCore"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/proviscore"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 )
 
 func main() {
-	cfg := provisCore.NewConfig(
+	cfg := proviscore.NewConfig(
 		"apibase-integraciones.provis.es",
 		"your-application-key",
 		"your-secret-key",
 		false,
 	)
 
-	provider := provisCore.Init(cfg)
+	provider := proviscore.Init(cfg)
 	defer provider.Close()
 
 	showAll := true
-	courses, err := provider.Cursillos("your-installation-id", &provisEntities.CursillosParams{
+	courses, err := provider.Cursillos("your-installation-id", &provisentities.CursillosParams{
 		ShowAllCourses: &showAll,
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func main() {
 
 ## Configuration
 
-`provisCore.NewConfig(host, applicationKey, secretKey, debug)` creates the API configuration.
+`proviscore.NewConfig(host, applicationKey, secretKey, debug)` creates the API configuration.
 
 - `host`: API host without scheme, for example `apibase-integraciones.provis.es`.
 - `applicationKey`: PROVIS application key.
@@ -57,7 +57,9 @@ Keep `applicationKey`, `secretKey`, installation IDs, and exported customer data
 
 ## Supported Endpoints
 
-The provider returned by `provisCore.Init` currently exposes:
+`proviscore.Init` returns a `*proviscore.ProvisProvider`, which can be used as a named type in your own APIs.
+
+The provider currently exposes:
 
 - `Cursillos`
 - `Cuotas`
@@ -67,7 +69,7 @@ The provider returned by `provisCore.Init` currently exposes:
 - `Installations`
 - `Groups`
 
-Each method returns the typed response and a `*provisEntities.ErrorResponse`. Check the error before using the response.
+Each method returns the typed response and a `*provisentities.ErrorResponse`. Check the error before using the response.
 
 ## Debug Output
 
@@ -81,15 +83,15 @@ This can expose credentials, authorization headers, personal data, and API respo
 
 ## Release Checklist
 
-Before tagging `v0.1.0`:
+Before tagging `v0.1.1`:
 
 ```bash
 go test ./...
 go vet ./...
 git status --short
-git tag -a v0.1.0 -m "v0.1.0"
+git tag -a v0.1.1 -m "v0.1.1"
 git push origin main
-git push origin v0.1.0
+git push origin v0.1.1
 ```
 
 Make the GitHub repository public only after confirming no private credentials, exports, or non-redistributable documents are tracked.

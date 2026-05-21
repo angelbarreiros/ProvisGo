@@ -1,14 +1,15 @@
-package provisCore
+package proviscore
 
 import (
 	"context"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
-	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
+
+	"github.com/angelbarreiros/ProvisGo/provisentities"
+	"github.com/angelbarreiros/ProvisGo/util"
 )
 
-func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.FamiliesParams) (*provisEntities.Familie, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Installations(filterParams *provisentities.InstallationsParams) (any, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -17,14 +18,14 @@ func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.
 		if filterParams != nil {
 			params = filterParams.ToURLValues()
 		}
-		params.Set("installationId", pe.installationId)
-		params.Set("clientID", clientID)
+		// Build URL path with optional extended parameter
+		urlPath := "/api/installations/byappkey"
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			http.MethodGet, "/api/person/family/byperson/", params,
+			http.MethodGet, urlPath, params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray = make([]*provisEntities.FamilyPerson, 0)
+		var responseArray any
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
@@ -32,22 +33,21 @@ func (pe provisExecutor) Families(clientID string, filterParams *provisEntities.
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			if persons, ok := res.Response.(*[]*provisEntities.FamilyPerson); ok {
-				if persons == nil {
-					persons = &[]*provisEntities.FamilyPerson{}
+			if workers, ok := res.Response.([]any); ok {
+				if workers == nil {
+					workers = nil
 				}
-				return &provisEntities.Familie{
-					FamilyPersons: *persons,
-				}, res.Error
+				return res.Response, res.Error
+
 			}
-			return nil, &provisEntities.ErrorResponse{
+			return nil, &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Invalid response format",
 			}
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &provisentities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

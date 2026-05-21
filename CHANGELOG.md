@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.1
+
+- Renames public package paths to lowercase `proviscore` and `provisentities`.
+- Exports the provider type as `proviscore.ProvisProvider`.
+
 ## v0.1.0
 
 Initial public release candidate.

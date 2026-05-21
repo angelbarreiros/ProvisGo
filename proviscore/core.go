@@ -1,16 +1,17 @@
-package provisCore
+package proviscore
 
 import (
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 )
 
-var provisProviderInstace *provisProvider = nil
+var provisProviderInstace *ProvisProvider = nil
 
-type provisProvider struct {
+type ProvisProvider struct {
 	providers *sync.Pool
 }
 type provisExecutor struct {
@@ -20,10 +21,10 @@ type provisExecutor struct {
 	installationId string
 }
 
-func Init(cfg *provisConfig) *provisProvider {
+func Init(cfg *provisConfig) *ProvisProvider {
 
 	if provisProviderInstace == nil {
-		provisProviderInstace = &provisProvider{
+		provisProviderInstace = &ProvisProvider{
 			providers: &sync.Pool{
 				New: func() any {
 					return &provisExecutor{config: cfg, client: http.DefaultClient, defaultTimeout: 30 * time.Second}
@@ -33,20 +34,20 @@ func Init(cfg *provisConfig) *provisProvider {
 	}
 	return provisProviderInstace
 }
-func (pp provisProvider) getExecutor(installationId string) *provisExecutor {
+func (pp ProvisProvider) getExecutor(installationId string) *provisExecutor {
 	var executor = pp.providers.Get().(*provisExecutor)
 	executor.installationId = installationId
 	return executor
 }
-func (pp provisProvider) putExecutor(executor *provisExecutor) {
+func (pp ProvisProvider) putExecutor(executor *provisExecutor) {
 	pp.providers.Put(executor)
 }
-func (pp provisProvider) Close() {
+func (pp ProvisProvider) Close() {
 	provisProviderInstace = nil
 }
-func checkInstallationId(installationId string) *provisEntities.ErrorResponse {
+func checkInstallationId(installationId string) *provisentities.ErrorResponse {
 	if strings.TrimSpace(installationId) == "" {
-		return &provisEntities.ErrorResponse{
+		return &provisentities.ErrorResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Installation ID cannot be empty",
 		}
@@ -54,7 +55,7 @@ func checkInstallationId(installationId string) *provisEntities.ErrorResponse {
 
 	return nil
 }
-func (pp provisProvider) Cursillos(installationId string, filterParams *provisEntities.CursillosParams) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Cursillos(installationId string, filterParams *provisentities.CursillosParams) (*provisentities.CursillosResponse, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (pp provisProvider) Cursillos(installationId string, filterParams *provisEn
 	var response, err = executor.Cursillos(filterParams)
 	return response, err
 }
-func (pp provisProvider) Cuotas(installationId string, filterParams *provisEntities.CuotasParams) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Cuotas(installationId string, filterParams *provisentities.CuotasParams) (*provisentities.CursillosResponse, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}
@@ -72,7 +73,7 @@ func (pp provisProvider) Cuotas(installationId string, filterParams *provisEntit
 	var response, err = executor.Cuotas(filterParams)
 	return response, err
 }
-func (pp provisProvider) Workers(installationId string, filterParams *provisEntities.WorkersParams) (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Workers(installationId string, filterParams *provisentities.WorkersParams) (*provisentities.ProvisWorkers, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (pp provisProvider) Workers(installationId string, filterParams *provisEnti
 	var response, err = executor.Workers(filterParams)
 	return response, err
 }
-func (pp provisProvider) Personaldata(installationId string, personId string, filterParams *provisEntities.PersonalDataParams) (*provisEntities.FamilyPerson, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Personaldata(installationId string, personId string, filterParams *provisentities.PersonalDataParams) (*provisentities.FamilyPerson, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (pp provisProvider) Personaldata(installationId string, personId string, fi
 	var response, err = executor.Personaldata(personId, filterParams)
 	return response, err
 }
-func (pp provisProvider) Families(installationId string, personId string, filterParams *provisEntities.FamiliesParams) (*provisEntities.Familie, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Families(installationId string, personId string, filterParams *provisentities.FamiliesParams) (*provisentities.Familie, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}
@@ -99,13 +100,13 @@ func (pp provisProvider) Families(installationId string, personId string, filter
 	var response, err = executor.Families(personId, filterParams)
 	return response, err
 }
-func (pp provisProvider) Installations(filterParams *provisEntities.InstallationsParams) (any, *provisEntities.ErrorResponse) {
-	executor := pp.getExecutor("")
+func (pp ProvisProvider) Installations(installationId string, filterParams *provisentities.InstallationsParams) (any, *provisentities.ErrorResponse) {
+	executor := pp.getExecutor(installationId)
 	defer pp.putExecutor(executor)
 	var response, err = executor.Installations(filterParams)
 	return response, err
 }
-func (pp provisProvider) Groups(installationId string, courseGroupId string, dateToConsult string, filterParams *provisEntities.GroupsParams) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {
+func (pp ProvisProvider) Groups(installationId string, courseGroupId string, dateToConsult string, filterParams *provisentities.GroupsParams) (*provisentities.GroupsResponse, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
 	}

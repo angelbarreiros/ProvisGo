@@ -1,14 +1,14 @@
-package provisCore
+package proviscore
 
 import (
 	"context"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
 )
 
-func (pe provisExecutor) Installations(filterParams *provisEntities.InstallationsParams) (any, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Families(clientID string, filterParams *provisentities.FamiliesParams) (*provisentities.Familie, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -17,19 +17,14 @@ func (pe provisExecutor) Installations(filterParams *provisEntities.Installation
 		if filterParams != nil {
 			params = filterParams.ToURLValues()
 		}
-		// Build URL path with optional extended parameter
-		urlPath := "/api/installations/byappkey"
-		if filterParams != nil && filterParams.Extended != nil && *filterParams.Extended {
-			urlPath += "?extended=true"
-		} else {
-			urlPath += "?extended=true" // Default behavior
-		}
+		params.Set("installationId", pe.installationId)
+		params.Set("clientID", clientID)
 
 		var request *http.Request = pe.config.generateRequest(pe.installationId,
-			http.MethodGet, urlPath, params,
+			http.MethodGet, "/api/person/family/byperson/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray any
+		var responseArray = make([]*provisentities.FamilyPerson, 0)
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
@@ -37,21 +32,22 @@ func (pe provisExecutor) Installations(filterParams *provisEntities.Installation
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			if workers, ok := res.Response.([]any); ok {
-				if workers == nil {
-					workers = nil
+			if persons, ok := res.Response.(*[]*provisentities.FamilyPerson); ok {
+				if persons == nil {
+					persons = &[]*provisentities.FamilyPerson{}
 				}
-				return res.Response, res.Error
-
+				return &provisentities.Familie{
+					FamilyPersons: *persons,
+				}, res.Error
 			}
-			return nil, &provisEntities.ErrorResponse{
+			return nil, &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Invalid response format",
 			}
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &provisentities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

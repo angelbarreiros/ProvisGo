@@ -1,4 +1,4 @@
-package provisEntities
+package provisentities
 
 type ErrorResponse struct {
 	Code    int    `json:"code"`

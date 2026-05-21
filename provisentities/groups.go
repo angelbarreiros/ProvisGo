@@ -1,4 +1,4 @@
-package provisEntities
+package provisentities
 
 import "net/url"
 

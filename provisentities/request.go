@@ -1,4 +1,4 @@
-package provisEntities
+package provisentities
 
 type LoginRequest struct {
 	IdInstallation int    `json:"idInstallation"`

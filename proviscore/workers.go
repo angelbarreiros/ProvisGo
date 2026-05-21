@@ -1,14 +1,14 @@
-package provisCore
+package proviscore
 
 import (
 	"context"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
 )
 
-func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*provisEntities.ProvisWorkers, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Workers(filterParams *provisentities.WorkersParams) (*provisentities.ProvisWorkers, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -23,7 +23,7 @@ func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*p
 			http.MethodGet, "/api/staff/list/", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray = make([]*provisEntities.ProvisWorker, 0)
+		var responseArray = make([]*provisentities.ProvisWorker, 0)
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
@@ -31,22 +31,22 @@ func (pe provisExecutor) Workers(filterParams *provisEntities.WorkersParams) (*p
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			if workers, ok := res.Response.(*[]*provisEntities.ProvisWorker); ok {
+			if workers, ok := res.Response.(*[]*provisentities.ProvisWorker); ok {
 				if workers == nil {
-					workers = &[]*provisEntities.ProvisWorker{}
+					workers = &[]*provisentities.ProvisWorker{}
 				}
-				return &provisEntities.ProvisWorkers{
+				return &provisentities.ProvisWorkers{
 					Workers: *workers,
 				}, res.Error
 			}
-			return nil, &provisEntities.ErrorResponse{
+			return nil, &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Invalid response format",
 			}
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &provisentities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

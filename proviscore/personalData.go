@@ -1,14 +1,14 @@
-package provisCore
+package proviscore
 
 import (
 	"context"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
 )
 
-func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntities.PersonalDataParams) (*provisEntities.FamilyPerson, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Personaldata(personId string, filterParams *provisentities.PersonalDataParams) (*provisentities.FamilyPerson, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -23,7 +23,7 @@ func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntit
 			http.MethodGet, "/api/person/personaldata", params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var response *provisEntities.FamilyPerson = new(provisEntities.FamilyPerson)
+		var response *provisentities.FamilyPerson = new(provisentities.FamilyPerson)
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, response)
 		resultChan <- result
 	}()
@@ -31,12 +31,12 @@ func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntit
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			var response = res.Response.(*provisEntities.FamilyPerson)
+			var response = res.Response.(*provisentities.FamilyPerson)
 			return response, res.Error
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &provisentities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}

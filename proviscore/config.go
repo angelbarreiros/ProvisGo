@@ -1,4 +1,4 @@
-package provisCore
+package proviscore
 
 import (
 	"bytes"

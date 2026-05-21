@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 	"io"
 	"log"
 	"net/http"
@@ -16,7 +16,7 @@ import (
 // RequestResult encapsulates the possible outcomes of an API request
 type RequestResult struct {
 	Response interface{}
-	Error    *provisEntities.ErrorResponse
+	Error    *provisentities.ErrorResponse
 }
 type ProvisErrorResponse struct {
 	Code          int    `json:"code"`
@@ -45,7 +45,7 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 	if clientErr != nil {
 		return RequestResult{
 			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+			Error: &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Failed to execute request: " + clientErr.Error(),
 			},
@@ -66,7 +66,7 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 	if err != nil {
 		return RequestResult{
 			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+			Error: &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,
 				Message: "Failed to read response body: " + err.Error(),
 			},
@@ -80,7 +80,7 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return RequestResult{
 			Response: nil,
-			Error: &provisEntities.ErrorResponse{
+			Error: &provisentities.ErrorResponse{
 				Code:    response.StatusCode,
 				Message: "HTTP " + response.Status + " response: " + string(bodyBytes),
 			},
@@ -91,7 +91,7 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 		if err != nil {
 			return RequestResult{
 				Response: nil,
-				Error: &provisEntities.ErrorResponse{
+				Error: &provisentities.ErrorResponse{
 					Code:    http.StatusInternalServerError,
 					Message: "Failed to unmarshal response: " + err.Error(),
 				},

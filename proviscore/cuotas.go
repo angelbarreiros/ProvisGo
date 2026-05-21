@@ -1,14 +1,14 @@
-package provisCore
+package proviscore
 
 import (
 	"context"
-	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/provisentities"
 	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
 )
 
-func (pe provisExecutor) Cuotas(filterParams *provisEntities.CuotasParams) (*provisEntities.CursillosResponse, *provisEntities.ErrorResponse) {
+func (pe provisExecutor) Cuotas(filterParams *provisentities.CuotasParams) (*provisentities.CursillosResponse, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -42,11 +42,11 @@ func (pe provisExecutor) Cuotas(filterParams *provisEntities.CuotasParams) (*pro
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			return &provisEntities.CursillosResponse{}, res.Error
+			return &provisentities.CursillosResponse{}, res.Error
 		}
 		return nil, res.Error
 	case <-ctxWithTimeout.Done():
-		return nil, &provisEntities.ErrorResponse{
+		return nil, &provisentities.ErrorResponse{
 			Code:    http.StatusRequestTimeout,
 			Message: "Request timeout: operation cancelled after 10 seconds",
 		}
