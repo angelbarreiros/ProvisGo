@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/angelbarreiros/ProvisGo/provisEntities"
 	"io"
 	"log"
 	"net/http"
-	"provisgo/provisEntities"
 	"sort"
 	"strings"
 )

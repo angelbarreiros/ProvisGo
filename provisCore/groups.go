@@ -2,10 +2,10 @@ package provisCore
 
 import (
 	"context"
+	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
-	"provisgo/provisEntities"
-	"provisgo/util"
 )
 
 func (pe provisExecutor) Groups(courseGroupId string, dateToConsult string, filterParams *provisEntities.GroupsParams) (*provisEntities.GroupsResponse, *provisEntities.ErrorResponse) {

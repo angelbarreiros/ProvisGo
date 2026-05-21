@@ -2,10 +2,10 @@ package provisCore
 
 import (
 	"context"
+	"github.com/angelbarreiros/ProvisGo/provisEntities"
+	"github.com/angelbarreiros/ProvisGo/util"
 	"net/http"
 	"net/url"
-	"provisgo/provisEntities"
-	"provisgo/util"
 )
 
 func (pe provisExecutor) Personaldata(personId string, filterParams *provisEntities.PersonalDataParams) (*provisEntities.FamilyPerson, *provisEntities.ErrorResponse) {

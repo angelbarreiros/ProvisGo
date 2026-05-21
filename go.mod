@@ -1,4 +1,4 @@
-module provisgo
+module github.com/angelbarreiros/ProvisGo
 
 go 1.24.3
 

@@ -1,8 +1,8 @@
 package provisCore
 
 import (
+	"github.com/angelbarreiros/ProvisGo/provisEntities"
 	"net/http"
-	"provisgo/provisEntities"
 	"strings"
 	"sync"
 	"time"

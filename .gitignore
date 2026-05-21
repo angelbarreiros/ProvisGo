@@ -3,6 +3,10 @@ util_main.go
 build
 dist
 provisgo
+.env
+.env.*
+.cache/
+coverage.out
 *.json
 .txt
 *.txt
