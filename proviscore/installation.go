@@ -9,7 +9,7 @@ import (
 	"github.com/angelbarreiros/ProvisGo/util"
 )
 
-func (pe provisExecutor) Installations(filterParams *provisentities.InstallationsParams) (any, *provisentities.ErrorResponse) {
+func (pe provisExecutor) Installations(filterParams *provisentities.InstallationsParams) (*provisentities.InstallationsResponse, *provisentities.ErrorResponse) {
 	ctxWithTimeout, cancel := context.WithTimeout(context.Background(), pe.defaultTimeout)
 	defer cancel()
 	resultChan := make(chan util.RequestResult, 1)
@@ -25,7 +25,7 @@ func (pe provisExecutor) Installations(filterParams *provisentities.Installation
 			http.MethodGet, urlPath, params,
 			nil)
 		request = request.WithContext(ctxWithTimeout)
-		var responseArray any
+		var responseArray = make([]provisentities.Installation, 0)
 		result := util.ExecuteRequest(ctxWithTimeout, pe.client, request, pe.config.Debug, &responseArray)
 		resultChan <- result
 	}()
@@ -33,12 +33,13 @@ func (pe provisExecutor) Installations(filterParams *provisentities.Installation
 	select {
 	case res := <-resultChan:
 		if res.Error == nil {
-			if workers, ok := res.Response.([]any); ok {
-				if workers == nil {
-					workers = nil
+			if installations, ok := res.Response.(*[]provisentities.Installation); ok {
+				if installations == nil {
+					installations = &[]provisentities.Installation{}
 				}
-				return res.Response, res.Error
-
+				return &provisentities.InstallationsResponse{
+					Installations: *installations,
+				}, res.Error
 			}
 			return nil, &provisentities.ErrorResponse{
 				Code:    http.StatusInternalServerError,

@@ -20,3 +20,21 @@ func (p *InstallationsParams) ToURLValues() url.Values {
 	// Extended is handled in the URL path
 	return values
 }
+
+type Installation struct {
+	IDInstalacion                       int     `json:"idInstalacion"`
+	Catalogo                            int     `json:"catalogo"`
+	Region                              string  `json:"region"`
+	URLInstalacion                      string  `json:"urlInstalacion"`
+	Longitud                            float64 `json:"longitud"`
+	Latitud                             float64 `json:"latitud"`
+	NomInstalacion                      string  `json:"nomInstalacion"`
+	ExportacionURL                      *string `json:"exportacionUrl"`
+	URLAppNoticias                      *string `json:"urlAppNoticias"`
+	EsPasaporte                         bool    `json:"esPasaporte"`
+	TieneModuloDeClasesColectivasCadena bool    `json:"tieneModuloDeClasesColectivasCadena"`
+}
+
+type InstallationsResponse struct {
+	Installations []Installation `json:"installations"`
+}

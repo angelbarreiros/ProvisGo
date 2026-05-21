@@ -100,7 +100,7 @@ func (pp ProvisProvider) Families(installationId string, personId string, filter
 	var response, err = executor.Families(personId, filterParams)
 	return response, err
 }
-func (pp ProvisProvider) Installations(installationId string, filterParams *provisentities.InstallationsParams) (any, *provisentities.ErrorResponse) {
+func (pp ProvisProvider) Installations(installationId string, filterParams *provisentities.InstallationsParams) (*provisentities.InstallationsResponse, *provisentities.ErrorResponse) {
 	executor := pp.getExecutor(installationId)
 	defer pp.putExecutor(executor)
 	var response, err = executor.Installations(filterParams)
