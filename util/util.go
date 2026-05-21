@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"provisgo/provisEntities"
 	"sort"
 	"strings"
@@ -73,36 +72,8 @@ func ExecuteRequest(ctx context.Context, client *http.Client, request *http.Requ
 			},
 		}
 	}
-
-	file, fileErr := os.Create("output.txt")
-	if fileErr != nil {
-		log.Printf("Failed to create file: %v", fileErr)
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Failed to create file: " + fileErr.Error(),
-			},
-		}
-	}
-	defer file.Close()
 	if debug {
-		if len(bodyBytes) == 0 {
-			fmt.Println("No body returned")
-		} else {
-			fmt.Println(string(bodyBytes))
-		}
-	}
-	_, writeErr := file.Write(bodyBytes)
-	if writeErr != nil {
-		log.Printf("Failed to write to file: %v", writeErr)
-		return RequestResult{
-			Response: nil,
-			Error: &provisEntities.ErrorResponse{
-				Code:    http.StatusInternalServerError,
-				Message: "Failed to write to file: " + writeErr.Error(),
-			},
-		}
+		fmt.Printf("Body: %s\n", string(bodyBytes))
 	}
 
 	// If we received a non-success status code, return an error after saving the body.

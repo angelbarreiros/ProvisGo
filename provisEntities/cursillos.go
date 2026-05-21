@@ -22,7 +22,6 @@ type CursillosParams struct {
 	Plazas                           *int     `json:"plazas,omitempty"`
 	IncluirVisiblesSoloDesdePrograma *bool    `json:"incluirVisiblesSoloDesdePrograma,omitempty"`
 	ShowAllCourses                   *bool    `json:"showallcourses,omitempty"`
-	ExtraParams                      map[string]string
 }
 
 // ToURLValues serializes the filter params to url.Values
@@ -74,9 +73,7 @@ func (p *CursillosParams) ToURLValues() url.Values {
 	if p.ShowAllCourses != nil {
 		values.Set("showallcourses", strconv.FormatBool(*p.ShowAllCourses))
 	}
-	for key, value := range p.ExtraParams {
-		values.Set(key, value)
-	}
+
 	return values
 }
 
