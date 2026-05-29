@@ -9,8 +9,6 @@ import (
 	"github.com/angelbarreiros/ProvisGo/provisentities"
 )
 
-var provisProviderInstace *ProvisProvider = nil
-
 type ProvisProvider struct {
 	providers *sync.Pool
 }
@@ -22,17 +20,13 @@ type provisExecutor struct {
 }
 
 func Init(cfg *provisConfig) *ProvisProvider {
-
-	if provisProviderInstace == nil {
-		provisProviderInstace = &ProvisProvider{
-			providers: &sync.Pool{
-				New: func() any {
-					return &provisExecutor{config: cfg, client: http.DefaultClient, defaultTimeout: 30 * time.Second}
-				},
+	return &ProvisProvider{
+		providers: &sync.Pool{
+			New: func() any {
+				return &provisExecutor{config: cfg, client: http.DefaultClient, defaultTimeout: 30 * time.Second}
 			},
-		}
+		},
 	}
-	return provisProviderInstace
 }
 func (pp ProvisProvider) getExecutor(installationId string) *provisExecutor {
 	var executor = pp.providers.Get().(*provisExecutor)
@@ -43,7 +37,6 @@ func (pp ProvisProvider) putExecutor(executor *provisExecutor) {
 	pp.providers.Put(executor)
 }
 func (pp ProvisProvider) Close() {
-	provisProviderInstace = nil
 }
 func checkInstallationId(installationId string) *provisentities.ErrorResponse {
 	if strings.TrimSpace(installationId) == "" {
