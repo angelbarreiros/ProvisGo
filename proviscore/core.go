@@ -84,6 +84,15 @@ func (pp ProvisProvider) Personaldata(installationId string, personId string, fi
 	var response, err = executor.Personaldata(personId, filterParams)
 	return response, err
 }
+func (pp ProvisProvider) PersonImage(installationId string, personId string, filterParams *provisentities.PersonImageParams) (*provisentities.PersonImageResponse, *provisentities.ErrorResponse) {
+	if err := checkInstallationId(installationId); err != nil {
+		return nil, err
+	}
+	executor := pp.getExecutor(installationId)
+	defer pp.putExecutor(executor)
+	var response, err = executor.PersonImage(personId, filterParams)
+	return response, err
+}
 func (pp ProvisProvider) Families(installationId string, personId string, filterParams *provisentities.FamiliesParams) (*provisentities.Familie, *provisentities.ErrorResponse) {
 	if err := checkInstallationId(installationId); err != nil {
 		return nil, err
@@ -106,5 +115,14 @@ func (pp ProvisProvider) Groups(installationId string, courseGroupId string, dat
 	executor := pp.getExecutor(installationId)
 	defer pp.putExecutor(executor)
 	var response, err = executor.Groups(courseGroupId, dateToConsult, filterParams)
+	return response, err
+}
+func (pp ProvisProvider) AccessByDate(installationId string, filterParams *provisentities.AccessByDateParams) (*provisentities.AccessByDateResponse, *provisentities.ErrorResponse) {
+	if err := checkInstallationId(installationId); err != nil {
+		return nil, err
+	}
+	executor := pp.getExecutor(installationId)
+	defer pp.putExecutor(executor)
+	var response, err = executor.AccessByDate(filterParams)
 	return response, err
 }
