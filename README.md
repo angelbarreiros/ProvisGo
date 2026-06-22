@@ -65,11 +65,15 @@ The provider currently exposes:
 - `Cuotas`
 - `Workers`
 - `Personaldata`
+- `PersonImage`
 - `Families`
 - `Installations`
 - `Groups`
+- `AccessByDate`
 
 Each method returns the typed response and a `*provisentities.ErrorResponse`. Check the error before using the response.
+
+
 
 ## Debug Output
 
@@ -83,15 +87,15 @@ This can expose credentials, authorization headers, personal data, and API respo
 
 ## Release Checklist
 
-Before tagging `v0.1.1`:
+Before tagging a new version:
 
 ```bash
 go test ./...
 go vet ./...
 git status --short
-git tag -a v0.1.1 -m "v0.1.1"
+git tag -a v0.1.4 -m "v0.1.4"
 git push origin main
-git push origin v0.1.1
+git push origin v0.1.4
 ```
 
 Make the GitHub repository public only after confirming no private credentials, exports, or non-redistributable documents are tracked.

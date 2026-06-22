@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.4
+
+- Adds `PersonImage` to fetch person images through the SDK without storing them.
+- Adds `AccessByDate` to fetch access events by date/time range.
+- Documents the recommended backend proxy and short-lived frontend cache plan for images.
+- Lists `PersonImage` and `AccessByDate` in the public provider endpoints.
+
 ## v0.1.1
 
 - Renames public package paths to lowercase `proviscore` and `provisentities`.
